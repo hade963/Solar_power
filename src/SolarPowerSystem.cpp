@@ -114,7 +114,7 @@ void SolarPowerSystem::updateBatteryPower(unsigned long deltaTime) {
   batteryPower = solarPanelPower + gridPower - housePower;
   
   // تحويل الطاقة إلى تغير في سعة البطارية
-  float powerDelta = batteryPower * deltaTime / 3600000.0f; // التحويل من ميلي ثانية إلى ساعة
+  float powerDelta = batteryPower * deltaTime / HOUR; // التحويل من ميلي ثانية إلى ساعة
   battery += powerDelta;
 
   // التحقق من حدود البطارية

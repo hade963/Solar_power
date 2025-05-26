@@ -7,9 +7,13 @@ SolarPowerSystem::SolarPowerSystem(HomeDevice* deviceArray, int count,
   bluetoothSerial(bluetoothRxPin, bluetoothTxPin),
   BATTERY_CAPACITY_AMP(batteryCapacityAmp),
   BATTERY_VOLTAGE(batteryVoltage),
-  BATTERY_FULL(BATTERY_CAPACITY_AMP * BATTERY_VOLTAGE),
+  BATTERY_FULL(BATTERY_CAPACITY_AMP * BATTERY_VOLTAGE), // Wh
   BATTERY_MAX(BATTERY_FULL * 0.8f),
   BATTERY_MIN(BATTERY_FULL * 0.2f),
+  CHARGE_EFFICIENCY(0.9f), // 90% efficiency
+  DISCHARGE_EFFICIENCY(0.9f), // 90% efficiency
+  MAX_CHARGE_POWER(BATTERY_FULL * 0.4f), // 0.5C charge rate limit (W)
+  MAX_DISCHARGE_POWER(BATTERY_FULL * 0.4f), // 0.5C discharge rate limit (W)
   solarPanelPower(2000.0f),
   gridPower(0.0f),
   housePower(0.0f),
@@ -113,16 +117,43 @@ void SolarPowerSystem::updateBatteryPower(unsigned long deltaTime) {
   // حساب قوة البطارية (موجبة عند الشحن، سالبة عند التفريغ)
   batteryPower = solarPanelPower + gridPower - housePower;
   
-  // تحويل الطاقة إلى تغير في سعة البطارية
-  float powerDelta = batteryPower * deltaTime / HOUR; // التحويل من ميلي ثانية إلى ساعة
+  float dtHours = deltaTime / (float)HOUR; // التحويل من ميلي ثانية إلى ساعة
+  // تطبيق حدود معدل الشحن/التفريغ (C-Rate Limits)
+  if (batteryPower > MAX_CHARGE_POWER) {
+    excessPower += (batteryPower - MAX_CHARGE_POWER) * dtHours; // تقدير للطاقة الفائضة التي لم تخزن
+    batteryPower = MAX_CHARGE_POWER;
+  } else if (batteryPower < -MAX_DISCHARGE_POWER) {
+    shortfallPower += (batteryPower + MAX_DISCHARGE_POWER) * dtHours; // تقدير للطاقة التي لم توفر
+    batteryPower = -MAX_DISCHARGE_POWER;
+  }
+
+  // تحويل الطاقة إلى تغير في سعة البطارية مع مراعاة الكفاءة
+  float powerDelta = 0.0f;
+
+  if (batteryPower > 0) { // حالة الشحن
+    // الطاقة الفعلية المخزنة = الطاقة الداخلة * كفاءة الشحن
+    powerDelta = batteryPower * CHARGE_EFFICIENCY * dtHours;
+  } else if (batteryPower < 0) { // حالة التفريغ
+    // الطاقة المسحوبة من البطارية = الطاقة المطلوبة / كفاءة التفريغ
+    // batteryPower سالبة، لذا النتيجة ستكون سالبة (تفريغ)
+    powerDelta = (batteryPower / DISCHARGE_EFFICIENCY) * dtHours;
+  }
+  // إذا كانت batteryPower == 0، لا يوجد تغيير
+
   battery += powerDelta;
 
   // التحقق من حدود البطارية
   if (battery < BATTERY_MIN) {
-    shortfallPower += (BATTERY_MIN - battery);
+    // حساب النقص الفعلي الذي لم تتم تلبيته بسبب وصول البطارية للحد الأدنى
+    // powerDelta هنا يمثل الطاقة التي *كانت* ستُسحب لو لم نصل للحد الأدنى
+    // النقص هو الفرق بين ما نحتاجه وما هو متاح فعلياً
+    // (نحتاج لتحويل energy delta العائد إلى power)
+    // الطريقة الأبسط هي تتبع الطاقة التي لم يتم تخزينها/سحبها بسبب الحدود
+    shortfallPower += (BATTERY_MIN - battery); // تقدير للطاقة التي لم توفر
     battery = BATTERY_MIN;
   } else if (battery > BATTERY_MAX) {
-    excessPower += (battery - BATTERY_MAX);
+    // حساب الفائض الفعلي الذي لم يتم تخزينه
+    excessPower += (battery - BATTERY_MAX); // تقدير للطاقة الفائضة التي لم تخزن
     battery = BATTERY_MAX;
   }
   

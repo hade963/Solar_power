@@ -21,6 +21,10 @@ private:
   const float BATTERY_FULL;          // الطاقة الكاملة للبطارية
   const float BATTERY_MAX;           // الحد الأقصى للبطارية
   const float BATTERY_MIN;           // الحد الأدنى للبطارية
+  const float CHARGE_EFFICIENCY;     // كفاءة الشحن (e.g., 0.9 for 90%)
+  const float DISCHARGE_EFFICIENCY;  // كفاءة التفريغ (e.g., 0.9 for 90%)
+  const float MAX_CHARGE_POWER;      // أقصى استطاعة شحن (W)
+  const float MAX_DISCHARGE_POWER;   // أقصى استطاعة تفريغ (W)
 
   // متغيرات مصادر الطاقة
   float solarPanelPower;             // الاستطاعة المقدمة من الألواح 

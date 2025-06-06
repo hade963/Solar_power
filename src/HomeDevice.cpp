@@ -5,8 +5,7 @@ HomeDevice::HomeDevice(int pin, float operationPower, float startupPower,
                     unsigned long minOnTime, unsigned long maxOnTime, 
                     unsigned long minOffTime, unsigned long maxOffTime, int priority) {
   _pin = pin;
-  _operationPower = operationPower;
-  _startupPower = startupPower;
+  _operationPower = operationPower; 
   _minOnTime = minOnTime;
   _maxOnTime = maxOnTime;
   _minOffTime = minOffTime;
@@ -25,24 +24,12 @@ HomeDevice::HomeDevice(int pin, float operationPower, float startupPower,
 
 // تحديث حالة الجهاز إذا كان مطفأ
 void HomeDevice::updateIfOff(float availablePower, float &totalConsumption) {
-  if (_state == OFF && _offTime >= _minOffTime && !(_onTime >= _maxOnTime)) {
-    // إذا كان الجهاز مطفأ وانقضى الحد الأدنى لزمن الإطفاء ولم يتجاوز زمن التشغيل الحد الأقصى
-    if (_offTime > _maxOffTime || _operationPower + totalConsumption <= availablePower) {
-      _state = ON;
-      totalConsumption += _operationPower;
-    }
-  }
+  
 }
 
 // تحديث حالة الجهاز إذا كان قيد التشغيل
 void HomeDevice::updateIfOn(float availablePower, float &totalConsumption) {
-  if (_state == ON && _onTime >= _minOnTime && !(_offTime >= _maxOffTime)) {
-    // إذا كان الجهاز قيد التشغيل وانقضى الحد الأدنى لزمن التشغيل ولم يتجاوز زمن الإطفاء الحد الأقصى
-    if (_onTime > _maxOnTime || totalConsumption > availablePower) {
-      _state = OFF;
-      totalConsumption -= _operationPower;
-    }
-  }
+ 
 }
 
 // تنفيذ حالة الجهاز

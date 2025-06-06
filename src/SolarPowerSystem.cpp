@@ -4,7 +4,6 @@
 SolarPowerSystem::SolarPowerSystem(HomeDevice* deviceArray, int count, 
                                  float batteryCapacityAmp, 
                                  float batteryVoltage) : 
-  bluetoothSerial(bluetoothRxPin, bluetoothTxPin),
   BATTERY_CAPACITY_AMP(batteryCapacityAmp),
   BATTERY_VOLTAGE(batteryVoltage),
   BATTERY_FULL(BATTERY_CAPACITY_AMP * BATTERY_VOLTAGE), // Wh
@@ -177,34 +176,6 @@ void SolarPowerSystem::sortDevicesByPriority() {
 
 // طباعة معلومات النظام
 void SolarPowerSystem::printSystemInfo() {
-  // 1. تنسيق البيانات في سلسلة واحدة مفصولة بفواصل (CSV format)
-  String dataString = "";
-  dataString += String(batteryPercentage, 1); // رقم عشري واحد
-  dataString += ",";
-  dataString += String(excessPower, 1);
-  dataString += ",";
-  dataString += String(shortfallPower, 1);
-  dataString += ",";
-  dataString += String(solarPanelPower, 1);
-  dataString += ",";
-  dataString += String(housePower, 1);
-  dataString += ",";
-  dataString += String(batteryPower, 1);
-
-  // إضافة حالة الأجهزة (مرتبة حسب الأولوية بالفعل)
-  for (int i = 0; i < deviceCount; i++) {
-    dataString += ","; // إضافة فاصلة قبل حالة كل جهاز
-    dataString += String(devices[i].getState() == ON ? 1 : 0); // إضافة 1 لـ ON و 0 لـ OFF
-  }
-
-  // 2. إرسال السلسلة عبر منفذ البلوتوث التسلسلي
-  //    استخدام println يضيف حرف سطر جديد (\n) في النهاية،
-  //    وهو مفيد كمحدد لنهاية الرسالة في جانب فلاتر.
-  bluetoothSerial.println(dataString);
-
-  // (اختياري) طباعة نفس البيانات على Serial Monitor للتصحيح
-  Serial.print("Sending via BT: ");
-  Serial.println(dataString);
 }
 
 // دوال للوصول للمتغيرات وتعديلها
@@ -227,12 +198,3 @@ float SolarPowerSystem::getSolarPanelPower() const {
 float SolarPowerSystem::getHousePower() const {
   return housePower;
 }
-
-// --- دالة جديدة لبدء البلوتوث ---
-void SolarPowerSystem::beginBluetooth(long baudRate) {
-  bluetoothSerial.begin(baudRate);
-  Serial.print("Bluetooth Serial Started at "); // رسالة تصحيح
-  Serial.print(baudRate);
-  Serial.println(" baud.");
-  Serial.println("Make sure Bluetooth module is paired with your phone.");
-} 

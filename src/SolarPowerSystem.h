@@ -10,11 +10,7 @@
 //////////////////////////////////////////////////////////////////
 class SolarPowerSystem {
 private:
-  // --- تعريفات وحدة البلوتوث ---
-  static const byte bluetoothRxPin = 2; // يتصل بـ TXD الخاص بوحدة البلوتوث
-  static const byte bluetoothTxPin = 3; // يتصل بـ RXD الخاص بوحدة البلوتوث
-  SoftwareSerial bluetoothSerial;      // <-- إضافة جديدة
-  
+
   // ثوابت البطارية
   const float BATTERY_CAPACITY_AMP;  // سعة البطارية بالأمبير
   const float BATTERY_VOLTAGE;       // جهد البطارية بالفولت
@@ -64,9 +60,6 @@ public:
   SolarPowerSystem(HomeDevice* deviceArray, int count, 
                   float batteryCapacityAmp = 250.0f, 
                   float batteryVoltage = 24.0f);
-  
-  // --- إضافة جديدة: دالة لبدء البلوتوث ---
-  void beginBluetooth(long baudRate = 9600);
   
   // تحديث حالة النظام
   void update();

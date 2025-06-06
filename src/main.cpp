@@ -22,12 +22,6 @@ SolarPowerSystem solarSystem(devices, deviceCount);
 //////////////////////////////////////////////////////////////////
 void setup() {
   Serial.begin(9600);
-  while (!Serial); // انتظر حتى يصبح Serial جاهزًا (خاصة لبعض اللوحات)
-  Serial.println("Serial Monitor Initialized.");
-
-  // بدء اتصال البلوتوث التسلسلي (بمعدل الباود الافتراضي 9600)
-  // تأكد من أن هذا المعدل يطابق إعدادات وحدة البلوتوث
-  solarSystem.beginBluetooth();
 }
 
 void loop() {
